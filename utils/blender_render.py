@@ -570,88 +570,118 @@ def delete_object_recursive(obj):
     bpy.data.objects.remove(obj, do_unlink=True)
 
 
-#########################################################
+# ########################################################
 # Main function
-#########################################################
-config_path = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/blender_cfg.json'
+# ########################################################
+def setup_and_render(scene_path, resolution, light_intensity, output_path):
+    config_path = './data/blender_cfg.json'
 
-with open(config_path, 'r') as f:
-    config = json.load(f)
+    with open(config_path, 'r') as f:
+        config = json.load(f)
 
-h, w = config['im_height'], config['im_width']
-K = np.array(config['K'])
-c2w = np.array(config['c2w'])
-scene_mesh_path = config['scene_mesh_path']
-global_env_map_path = config['global_env_map_path']
-output_dir = config['output_dir']
-os.makedirs(output_dir, exist_ok=True)
+    h, w = resolution, resolution
+    K = np.array(config['K'])
+    c2w = np.array(config['c2w'])
+    # scene_mesh_path = config['scene_mesh_path']
+    scene_mesh_path = scene_path
+    global_env_map_path = "./data/hdr/transforms_001/00000_rotate.exr"
+    global_env_map_path = os.path.abspath(global_env_map_path)
+    # output_dir = "./output/"
+    # os.makedirs(output_dir, exist_ok=True)
 
-# anti-aliasing rendering
-upscale = 2.0
-w = int(w * upscale)
-h = int(h * upscale)
-if len(K.shape) == 2:
-    K[0, 0] *= upscale
-    K[1, 1] *= upscale
-    K[0, 2] *= upscale
-    K[1, 2] *= upscale
-else:
-    for i in range(len(K)):
-        K[i][0, 0] *= upscale
-        K[i][1, 1] *= upscale
-        K[i][0, 2] *= upscale
-        K[i][1, 2] *= upscale
-
-setup_blender_env(w, h)
-scene_mesh = add_meshes_shadow_catcher(scene_mesh_path, is_uv_mesh=True)
-add_env_lighting(global_env_map_path, strength=0.6)     # TODO: this strength value adjustable for users
-
-cam = Camera(h, w, output_dir)
-cam.initialize_depth_extractor()  # initialize once
-cam_list = create_camera_list(c2w, K)
-
-scene.frame_start = 1
-scene.frame_end = 1
-# scene.frame_end = len(c2w)  # TODO: unblock this to render the entire video
-
-
-##### TODO: unit function for adding objects in the scene #####
-obj_path = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/assets/basketball.glb'
-obj_pos = np.array([0.20, -0.03, -0.45])
-obj_rot = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-obj_scale = 0.09
-object_mesh = insert_object(obj_path, obj_pos, obj_rot, obj_scale, from_3DGS=False)
-
-
-##### Render the scene #####
-RENDER_TYPE = 'MULTI_VIEW'  # 'SINGLE_VIEW' or 'MULTI_VIEW'
-for FRAME_INDEX in range(scene.frame_start, scene.frame_end + 1):
-
-    scene.frame_set(FRAME_INDEX)
-    scene.cycles.samples = 64           # TODO: increase for higher quality but slower rendering
-    bpy.context.view_layer.update()     # Ensure the scene is fully updated
-
-    # Step 1: render only inserted objects
-    set_visible_camera_recursive(object_mesh, True)
-    scene_mesh.visible_camera = False
-    if RENDER_TYPE == 'SINGLE_VIEW':
-        cam.render_single_timestep_rgb_and_depth(cam_list[0], FRAME_INDEX, dir_name_rgb='rgb_obj', dir_name_depth='depth_obj')
+    # anti-aliasing rendering
+    upscale = 2.0
+    w = int(w * upscale)
+    h = int(h * upscale)
+    if len(K.shape) == 2:
+        K[0, 0] *= upscale
+        K[1, 1] *= upscale
+        K[0, 2] *= upscale
+        K[1, 2] *= upscale
     else:
-        cam.render_single_timestep_rgb_and_depth(cam_list[FRAME_INDEX-1], FRAME_INDEX, dir_name_rgb='rgb_obj', dir_name_depth='depth_obj')
+        for i in range(len(K)):
+            K[i][0, 0] *= upscale
+            K[i][1, 1] *= upscale
+            K[i][0, 2] *= upscale
+            K[i][1, 2] *= upscale
 
-    # Step 2: render only shadow catcher
-    set_hide_render_recursive(object_mesh, True)
-    scene_mesh.visible_camera = True
-    if RENDER_TYPE == 'SINGLE_VIEW':
-        cam.render_single_timestep_rgb_and_depth(cam_list[0], FRAME_INDEX, dir_name_rgb='rgb_shadow', dir_name_depth='depth_shadow')
-    else:
-        cam.render_single_timestep_rgb_and_depth(cam_list[FRAME_INDEX-1], FRAME_INDEX, dir_name_rgb='rgb_shadow', dir_name_depth='depth_shadow')
+    setup_blender_env(w, h)
+    bpy.context.scene.render.resolution_x = w
+    bpy.context.scene.render.resolution_y = h 
+    scene_mesh = add_meshes_shadow_catcher(scene_mesh_path, is_uv_mesh=True)
+    add_env_lighting(global_env_map_path, strength=light_intensity)     # TODO: this strength value adjustable for users
 
-    # Step 3: render all effects
-    set_hide_render_recursive(object_mesh, False)
-    set_visible_camera_recursive(object_mesh, True)
-    scene_mesh.visible_camera = True
-    if RENDER_TYPE == 'SINGLE_VIEW':
-        cam.render_single_timestep_rgb_and_depth(cam_list[0], FRAME_INDEX, dir_name_rgb='rgb_all', dir_name_depth='depth_all')
-    else:
-        cam.render_single_timestep_rgb_and_depth(cam_list[FRAME_INDEX-1], FRAME_INDEX, dir_name_rgb='rgb_all', dir_name_depth='depth_all')
+    cam = Camera(h, w, output_path)
+    cam.initialize_depth_extractor()  # initialize once
+    cam_list = create_camera_list(c2w, K)
+
+    scene.frame_start = 1
+    scene.frame_end = 1
+    scene.frame_end = len(c2w)  # TODO: unblock this to render the entire video
+
+
+    ##### TODO: unit function for adding objects in the scene #####
+    obj_path = './data/assets/basketball.glb'
+    obj_pos = np.array([0.20, -0.03, -0.45])
+    obj_rot = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    obj_scale = 0.09
+    object_mesh = insert_object(obj_path, obj_pos, obj_rot, obj_scale, from_3DGS=False)
+
+
+    ##### Render the scene #####
+    RENDER_TYPE = 'MULTI_VIEW'  # 'SINGLE_VIEW' or 'MULTI_VIEW'
+    for FRAME_INDEX in range(scene.frame_start, scene.frame_end + 1):
+
+        scene.frame_set(FRAME_INDEX)
+        scene.cycles.samples = 64           # TODO: increase for higher quality but slower rendering
+        bpy.context.view_layer.update()     # Ensure the scene is fully updated
+
+        # Step 1: render only inserted objects
+        set_visible_camera_recursive(object_mesh, True)
+        scene_mesh.visible_camera = False
+        if RENDER_TYPE == 'SINGLE_VIEW':
+            cam.render_single_timestep_rgb_and_depth(cam_list[0], FRAME_INDEX, dir_name_rgb='rgb_obj', dir_name_depth='depth_obj')
+        else:
+            cam.render_single_timestep_rgb_and_depth(cam_list[FRAME_INDEX-1], FRAME_INDEX, dir_name_rgb='rgb_obj', dir_name_depth='depth_obj')
+
+        # Step 2: render only shadow catcher
+        set_hide_render_recursive(object_mesh, True)
+        scene_mesh.visible_camera = True
+        if RENDER_TYPE == 'SINGLE_VIEW':
+            cam.render_single_timestep_rgb_and_depth(cam_list[0], FRAME_INDEX, dir_name_rgb='rgb_shadow', dir_name_depth='depth_shadow')
+        else:
+            cam.render_single_timestep_rgb_and_depth(cam_list[FRAME_INDEX-1], FRAME_INDEX, dir_name_rgb='rgb_shadow', dir_name_depth='depth_shadow')
+
+        # Step 3: render all effects
+        set_hide_render_recursive(object_mesh, False)
+        set_visible_camera_recursive(object_mesh, True)
+        scene_mesh.visible_camera = True
+        if RENDER_TYPE == 'SINGLE_VIEW':
+            cam.render_single_timestep_rgb_and_depth(cam_list[0], FRAME_INDEX, dir_name_rgb='rgb_all', dir_name_depth='depth_all')
+        else:
+            cam.render_single_timestep_rgb_and_depth(cam_list[FRAME_INDEX-1], FRAME_INDEX, dir_name_rgb='rgb_all', dir_name_depth='depth_all')
+
+if __name__ == "__main__":
+    
+    args = sys.argv[sys.argv.index("--") + 1:]
+
+    if len(args) != 4:
+        raise ValueError("Expected 4 arguments: scene_path, resolution, light_intensity, output_path")
+
+    scene_path = args[0]
+    resolution = int(args[1])
+    light_intensity = float(args[2])
+    output_path = args[3]
+    
+    print(f"Scene Path: {scene_path}")
+    print(f"Resolution: {resolution}")
+    print(f"Light Intensity: {light_intensity}")
+    print(f"Output Path: {output_path}")
+
+    setup_and_render(
+        scene_path=scene_path,
+        resolution=resolution,
+        light_intensity=light_intensity,
+        # render_option=args.render_option,
+        output_path=output_path,
+    )

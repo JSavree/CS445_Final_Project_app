@@ -84,8 +84,8 @@ def depth_check(depth1, depth2, option='naive', d_tol=0.1):
         raise ValueError('Invalid option: {}'.format(option))
     
 
-root_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/custom_camera_path/transforms_001'
-blend_results_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/output'
+root_dir = './data/custom_camera_path/transforms_001'
+blend_results_dir = './output'
 out_img_dir = os.path.join(blend_results_dir, 'frames')
 os.makedirs(out_img_dir, exist_ok=True)
 
