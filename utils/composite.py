@@ -78,16 +78,13 @@ def load_depth_exr(path):
         return None
     else:
         try:
-            # 打开 EXR 文件
             exr_file = OpenEXR.InputFile(path)
             header = exr_file.header()
 
-            # 获取图像尺寸
             dw = header['dataWindow']
             width = dw.max.x - dw.min.x + 1
             height = dw.max.y - dw.min.y + 1
 
-            # 假设深度信息在 Z 通道，读取该通道
             channel = 'V'
             if channel in header['channels']:
                 raw_data = exr_file.channel(channel, Imath.PixelType(Imath.PixelType.FLOAT))
@@ -148,7 +145,6 @@ def list_channels(exr_path):
         print(f"Error reading EXR file {exr_path}: {e}")
         return None
 
-# 示例调用
 exr_file_path = r"C:\Users\Simon\Documents\GitHub\CS445_Final_Project_app\output\depth_obj\001\Image0001.exr"
 list_channels(exr_file_path)
 

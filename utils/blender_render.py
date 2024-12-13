@@ -623,7 +623,7 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
 
     scene.frame_start = 1
     scene.frame_end = 1
-    # scene.frame_end = len(c2w)  # TODO: unblock this to render the entire video
+    scene.frame_end = len(c2w)  # TODO: unblock this to render the entire video
 
 
     ##### TODO: unit function for adding objects in the scene #####
@@ -693,7 +693,7 @@ if __name__ == "__main__":
         raise ValueError("Expected 8 arguments: obj_files, scale, light_intensity, render_option, x, y, z, angle")
 
     obj_files = args[0]
-    scale = int(args[1])
+    scale = float(args[1])
     light_intensity = float(args[2])
     render_option = args[3]
     x = float(args[4])

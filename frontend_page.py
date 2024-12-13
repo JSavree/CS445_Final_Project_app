@@ -123,6 +123,8 @@ def render_object(obj_files, scale, light_intensity, render_option, x, y, z, ang
     
     return video_output
 
+    # return "done"
+    
 with gr.Blocks() as interface:
     
     with gr.Row():
@@ -132,7 +134,7 @@ with gr.Blocks() as interface:
                 file_types=[".obj", ".glb"]
                 # file_count="multiple"
             )
-            scale = gr.Slider(label="Scale", minimum=0.01, maximum=10.0, value=1.0)
+            scale = gr.Slider(label="Scale", minimum=0.05, maximum=1.0, value=0.5)
             light_intensity = gr.Slider(label="Light Intensity", minimum=0.0, maximum=10.0, value=1.0)
             render_option = gr.Radio(choices=["Single Image", "Multi Image"], label="Render Option")
             
