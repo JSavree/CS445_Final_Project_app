@@ -67,6 +67,7 @@ def load_depth_exr(path):
         return None
     else:
         d = cv2.imread(path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
+        
         return d[:, :, 0]
 
 
@@ -84,8 +85,13 @@ def depth_check(depth1, depth2, option='naive', d_tol=0.1):
         raise ValueError('Invalid option: {}'.format(option))
     
 
-root_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/custom_camera_path/transforms_001'
-blend_results_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/output'
+# root_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/custom_camera_path/transforms_001'
+root_dir = './data'
+# root_dir = os.path.abspath(root_dir)
+
+# blend_results_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/output'
+blend_results_dir = './output'
+# blend_results_dir = os.path.abspath(blend_results_dir)
 out_img_dir = os.path.join(blend_results_dir, 'frames')
 os.makedirs(out_img_dir, exist_ok=True)
 
@@ -102,6 +108,8 @@ for i in tqdm(range(n_frame)):
     # Get the paths for each frame
     obj_rgb_path = os.path.join(blend_results_dir, 'rgb_obj', '{:0>3d}.png'.format(i+1))
     obj_depth_path = os.path.join(blend_results_dir, 'depth_obj', '{:0>3d}'.format(i+1), 'Image{:0>4d}.exr'.format(i+1))
+    print(obj_depth_path)
+    print(obj_rgb_path)
     shadow_rgb_path = os.path.join(blend_results_dir, 'rgb_shadow', '{:0>3d}.png'.format(i+1))
     shadow_depth_path = os.path.join(blend_results_dir, 'depth_shadow', '{:0>3d}'.format(i+1), 'Image{:0>4d}.exr'.format(i+1))
     all_rgb_path = os.path.join(blend_results_dir, 'rgb_all', '{:0>3d}.png'.format(i+1))

@@ -573,7 +573,9 @@ def delete_object_recursive(obj):
 #########################################################
 # Main function
 #########################################################
-config_path = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/blender_cfg.json'
+# config_path = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/blender_cfg.json'
+config_path = './data/blender_cfg.json'
+config_path = os.path.abspath(config_path)
 
 with open(config_path, 'r') as f:
     config = json.load(f)
@@ -581,9 +583,12 @@ with open(config_path, 'r') as f:
 h, w = config['im_height'], config['im_width']
 K = np.array(config['K'])
 c2w = np.array(config['c2w'])
-scene_mesh_path = config['scene_mesh_path']
-global_env_map_path = config['global_env_map_path']
-output_dir = config['output_dir']
+scene_mesh_path = './data/mesh/bugatti.obj'
+scene_mesh_path = os.path.abspath(scene_mesh_path)
+
+global_env_map_path ='./data/hdr/transforms_001/00000_rotate.exr'
+global_env_map_path = os.path.abspath(global_env_map_path)
+output_dir = './output/'
 os.makedirs(output_dir, exist_ok=True)
 
 # anti-aliasing rendering
@@ -616,7 +621,9 @@ scene.frame_end = 1
 
 
 ##### TODO: unit function for adding objects in the scene #####
-obj_path = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/assets/basketball.glb'
+# obj_path = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/assets/basketball.glb'
+obj_path = './data/assets/basketball.glb'
+obj_path = os.path.abspath(obj_path)
 obj_pos = np.array([0.20, -0.03, -0.45])
 obj_rot = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
 obj_scale = 0.09
