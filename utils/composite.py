@@ -95,12 +95,13 @@ blend_results_dir = './output'
 file_path = os.path.abspath(blend_results_dir + '/depth_obj/001/image0001.exr')
 blend_results_dir = os.path.abspath(blend_results_dir)
 
-print("是否支持 EXR 格式:", cv2.haveImageReader("test.exr"))
+#for test
+print("if support EXR format:", cv2.haveImageReader("test.exr"))
 image = cv2.imread(file_path, cv2.IMREAD_UNCHANGED | cv2.IMREAD_ANYDEPTH | cv2.IMREAD_ANYCOLOR)
 if image is None:
-        print("OpenCV 加载失败，文件可能不兼容。")
+        print("OpenCV failed to load")
 else:
-        print("OpenCV 加载成功，图像形状:", image.shape)
+        print("OpenCV load successful and the image shape is:", image.shape)
         
         
 
