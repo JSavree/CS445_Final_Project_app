@@ -104,8 +104,24 @@ def render_object(obj_files, scale, light_intensity, render_option, x, y, z, ang
                 with open(log_path, "r") as error_file:
                     print(error_file.read())
             return f"Blender rendering failed. Check log file at {log_path}"
+        
+    composite_script = os.path.abspath("./utils/composite.py")
+    python_command = ["python", composite_script]
+    print("Composite Command:", python_command)
+
+    composite_log_path = os.path.join(output_dir, "composite_error.log")
+    with open(composite_log_path, "w") as log_file:
+        try:
+            subprocess.run(python_command, stdout=log_file, stderr=log_file, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Composite script failed. Check log file at {composite_log_path}")
+            return f"Composite script failed. Check log file at {composite_log_path}"
+
+    video_output = os.path.join(output_dir, "blended.mp4")
+    if not os.path.exists(video_output):
+        return "Composite script completed, but no video was generated."
     
-    return "output_image_placeholder.png"
+    return video_output
 
 with gr.Blocks() as interface:
     

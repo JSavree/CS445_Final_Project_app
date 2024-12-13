@@ -9,6 +9,8 @@ from tqdm import tqdm
 import glob
 import skimage
 import json
+import OpenEXR
+import Imath
 
 
 
@@ -63,13 +65,40 @@ def load_depth(path):
         return np.load(path)
 
 
+# def load_depth_exr(path):
+#     if not os.path.exists(path):
+#         return None
+#     else:
+#         d = cv2.imread(path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
+        
+#         return d[:, :, 0]
+
 def load_depth_exr(path):
     if not os.path.exists(path):
         return None
     else:
-        d = cv2.imread(path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
-        
-        return d[:, :, 0]
+        try:
+            # 打开 EXR 文件
+            exr_file = OpenEXR.InputFile(path)
+            header = exr_file.header()
+
+            # 获取图像尺寸
+            dw = header['dataWindow']
+            width = dw.max.x - dw.min.x + 1
+            height = dw.max.y - dw.min.y + 1
+
+            # 假设深度信息在 Z 通道，读取该通道
+            channel = 'V'
+            if channel in header['channels']:
+                raw_data = exr_file.channel(channel, Imath.PixelType(Imath.PixelType.FLOAT))
+                depth_data = np.frombuffer(raw_data, dtype=np.float32).reshape((height, width))
+                return depth_data
+            else:
+                print(f"Channel {channel} not found in EXR file {path}")
+                return None
+        except Exception as e:
+            print(f"Error loading EXR file {path}: {e}")
+            return None
 
 
 def depth_check(depth1, depth2, option='naive', d_tol=0.1):
@@ -87,25 +116,42 @@ def depth_check(depth1, depth2, option='naive', d_tol=0.1):
     
 
 # root_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/custom_camera_path/transforms_001'
-my_root_dir = 'C:/Users/aqwan/GitHub/CS445_Final_Project_app/data'
-root_dir = my_root_dir # './data'
-# root_dir = os.path.abspath(root_dir)
+# my_root_dir = 'C:/Users/aqwan/GitHub/CS445_Final_Project_app/data'
+# root_dir = my_root_dir # './data'
+root_dir = './data'
+root_dir = os.path.abspath(root_dir)
 
 # blend_results_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/output'
-my_blend_results_dir = 'C:/Users/aqwan/GitHub/CS445_Final_Project_app/output'
-blend_results_dir = my_blend_results_dir # './output'
-file_path = my_blend_results_dir + '/depth_obj/001/image0001.exr' # os.path.abspath(blend_results_dir + '/depth_obj/001/image0001.exr')
-# blend_results_dir = os.path.abspath(blend_results_dir)
+# my_blend_results_dir = 'C:/Users/aqwan/GitHub/CS445_Final_Project_app/output'
+# blend_results_dir = my_blend_results_dir # './output'
+# file_path = my_blend_results_dir + '/depth_obj/001/image0001.exr' 
+blend_results_dir = './output'
+file_path = os.path.abspath(blend_results_dir + '/depth_obj/001/image0001.exr')
+blend_results_dir = os.path.abspath(blend_results_dir)
 
 #for test
-print("if support EXR format:", cv2.haveImageReader("test.exr"))
-image = cv2.imread(file_path, cv2.IMREAD_UNCHANGED | cv2.IMREAD_ANYDEPTH | cv2.IMREAD_ANYCOLOR)
+
+image = OpenEXR.InputFile(file_path)
 if image is None:
         print("OpenCV failed to load")
 else:
-        print("OpenCV load successful and the image shape is:", image.shape)
+        print("OpenCV load successful")
         
-        
+
+def list_channels(exr_path):
+    try:
+        exr_file = OpenEXR.InputFile(exr_path)
+        channels = exr_file.header()['channels'].keys()
+        print(f"Channels in {exr_path}: {list(channels)}")
+        return list(channels)
+    except Exception as e:
+        print(f"Error reading EXR file {exr_path}: {e}")
+        return None
+
+# 示例调用
+exr_file_path = r"C:\Users\Simon\Documents\GitHub\CS445_Final_Project_app\output\depth_obj\001\Image0001.exr"
+list_channels(exr_file_path)
+
 
 out_img_dir = os.path.join(blend_results_dir, 'frames')
 os.makedirs(out_img_dir, exist_ok=True)
@@ -114,6 +160,7 @@ bg_rgb = sorted(glob.glob(os.path.join(root_dir, 'images', '*.png')))
 bg_depth = sorted(glob.glob(os.path.join(root_dir, 'depth', '*.npy')))
 
 rgb_all_img_path = glob.glob(os.path.join(blend_results_dir, 'rgb_all', '*.png'))
+
 n_frame = len(rgb_all_img_path)
 
 frames = []
@@ -193,4 +240,4 @@ for i in tqdm(range(n_frame)):
     path = os.path.join(out_img_dir, '{:0>4d}.png'.format(i))
     Image.fromarray(frame).save(path)
 
-#generate_video_from_frames(np.array(frames), os.path.join(blend_results_dir, 'blended.mp4'), fps=15)
+generate_video_from_frames(np.array(frames), os.path.join(blend_results_dir, 'blended.mp4'), fps=15)
