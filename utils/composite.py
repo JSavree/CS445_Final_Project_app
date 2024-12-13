@@ -2,6 +2,7 @@ import numpy as np
 import os 
 import argparse
 from PIL import Image, ImageFilter
+os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "True"
 import cv2
 import imageio.v2 as imageio
 from tqdm import tqdm
@@ -10,7 +11,7 @@ import skimage
 import json
 
 
-os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
+
 
 
 def downsample_image(image, new_size):
@@ -87,11 +88,22 @@ def depth_check(depth1, depth2, option='naive', d_tol=0.1):
 
 # root_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/custom_camera_path/transforms_001'
 root_dir = './data'
-# root_dir = os.path.abspath(root_dir)
+root_dir = os.path.abspath(root_dir)
 
 # blend_results_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/output'
 blend_results_dir = './output'
-# blend_results_dir = os.path.abspath(blend_results_dir)
+file_path = os.path.abspath(blend_results_dir + '/depth_obj/001/image0001.exr')
+blend_results_dir = os.path.abspath(blend_results_dir)
+
+print("是否支持 EXR 格式:", cv2.haveImageReader("test.exr"))
+image = cv2.imread(file_path, cv2.IMREAD_UNCHANGED | cv2.IMREAD_ANYDEPTH | cv2.IMREAD_ANYCOLOR)
+if image is None:
+        print("OpenCV 加载失败，文件可能不兼容。")
+else:
+        print("OpenCV 加载成功，图像形状:", image.shape)
+        
+        
+
 out_img_dir = os.path.join(blend_results_dir, 'frames')
 os.makedirs(out_img_dir, exist_ok=True)
 
@@ -108,8 +120,8 @@ for i in tqdm(range(n_frame)):
     # Get the paths for each frame
     obj_rgb_path = os.path.join(blend_results_dir, 'rgb_obj', '{:0>3d}.png'.format(i+1))
     obj_depth_path = os.path.join(blend_results_dir, 'depth_obj', '{:0>3d}'.format(i+1), 'Image{:0>4d}.exr'.format(i+1))
-    print(obj_depth_path)
-    print(obj_rgb_path)
+    # print(obj_depth_path)
+    # print(obj_rgb_path)
     shadow_rgb_path = os.path.join(blend_results_dir, 'rgb_shadow', '{:0>3d}.png'.format(i+1))
     shadow_depth_path = os.path.join(blend_results_dir, 'depth_shadow', '{:0>3d}'.format(i+1), 'Image{:0>4d}.exr'.format(i+1))
     all_rgb_path = os.path.join(blend_results_dir, 'rgb_all', '{:0>3d}.png'.format(i+1))
