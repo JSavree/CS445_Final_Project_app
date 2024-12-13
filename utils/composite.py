@@ -12,7 +12,7 @@ import json
 
 
 
-
+# jason liao blender location: C:/Program Files/Blender Foundation/Blender 4.2/blender
 
 def downsample_image(image, new_size):
     img = Image.fromarray(image)
@@ -87,13 +87,15 @@ def depth_check(depth1, depth2, option='naive', d_tol=0.1):
     
 
 # root_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/custom_camera_path/transforms_001'
-root_dir = './data'
-root_dir = os.path.abspath(root_dir)
+my_root_dir = 'C:/Users/aqwan/GitHub/CS445_Final_Project_app/data'
+root_dir = my_root_dir # './data'
+# root_dir = os.path.abspath(root_dir)
 
 # blend_results_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/output'
-blend_results_dir = './output'
-file_path = os.path.abspath(blend_results_dir + '/depth_obj/001/image0001.exr')
-blend_results_dir = os.path.abspath(blend_results_dir)
+my_blend_results_dir = 'C:/Users/aqwan/GitHub/CS445_Final_Project_app/output'
+blend_results_dir = my_blend_results_dir # './output'
+file_path = my_blend_results_dir + '/depth_obj/001/image0001.exr' # os.path.abspath(blend_results_dir + '/depth_obj/001/image0001.exr')
+# blend_results_dir = os.path.abspath(blend_results_dir)
 
 #for test
 print("if support EXR format:", cv2.haveImageReader("test.exr"))
@@ -191,4 +193,4 @@ for i in tqdm(range(n_frame)):
     path = os.path.join(out_img_dir, '{:0>4d}.png'.format(i))
     Image.fromarray(frame).save(path)
 
-generate_video_from_frames(np.array(frames), os.path.join(blend_results_dir, 'blended.mp4'), fps=15)
+#generate_video_from_frames(np.array(frames), os.path.join(blend_results_dir, 'blended.mp4'), fps=15)
