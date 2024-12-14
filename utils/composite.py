@@ -128,26 +128,26 @@ blend_results_dir = os.path.abspath(blend_results_dir)
 
 #for test
 
-image = OpenEXR.InputFile(file_path)
-if image is None:
-        print("OpenCV failed to load")
-else:
-        print("OpenCV load successful")
+# image = OpenEXR.InputFile(file_path)
+# if image is None:
+#         print("OpenCV failed to load")
+# else:
+#         print("OpenCV load successful")
         
 
-def list_channels(exr_path):
-    try:
-        exr_file = OpenEXR.InputFile(exr_path)
-        channels = exr_file.header()['channels'].keys()
-        print(f"Channels in {exr_path}: {list(channels)}")
-        return list(channels)
-    except Exception as e:
-        print(f"Error reading EXR file {exr_path}: {e}")
-        return None
+# def list_channels(exr_path):
+#     try:
+#         exr_file = OpenEXR.InputFile(exr_path)
+#         channels = exr_file.header()['channels'].keys()
+#         print(f"Channels in {exr_path}: {list(channels)}")
+#         return list(channels)
+#     except Exception as e:
+#         print(f"Error reading EXR file {exr_path}: {e}")
+#         return None
 
-exr_file_path = r"C:\Users\Simon\Documents\GitHub\CS445_Final_Project_app\output\depth_obj\001\Image0001.exr"
-list_channels(exr_file_path)
-
+# exr_file_path = r"C:\Users\Simon\Documents\GitHub\CS445_Final_Project_app\output\depth_obj\001\Image0001.exr"
+# list_channels(exr_file_path)
+###
 
 out_img_dir = os.path.join(blend_results_dir, 'frames')
 os.makedirs(out_img_dir, exist_ok=True)

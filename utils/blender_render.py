@@ -595,9 +595,9 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
 
     global_env_map_path ='./data/hdr/transforms_001/00000_rotate.exr'
     global_env_map_path = os.path.abspath(global_env_map_path)
-    output_dir = './output/'
-    output_dir = os.path.abspath(output_dir)
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir = './output'
+    # os.makedirs(output_dir, exist_ok=True)
+    output_dir = os.path.abspath(output_dir) 
 
     # anti-aliasing rendering
     # upscale = 2.0
@@ -659,7 +659,7 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
     for FRAME_INDEX in range(scene.frame_start, scene.frame_end + 1):
 
         scene.frame_set(FRAME_INDEX)
-        scene.cycles.samples = 32           # TODO: increase for higher quality but slower rendering 64
+        scene.cycles.samples = 32           # TODO: increase for higher quality but slower rendering
         bpy.context.view_layer.update()     # Ensure the scene is fully updated
         print("hello")
         # Step 1: render only inserted objects
