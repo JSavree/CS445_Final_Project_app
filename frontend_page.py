@@ -35,6 +35,9 @@ def render_object(obj_files, scale, light_intensity, render_option, x, y, z, ang
         return "No file uploaded!"
 
     obj_dir = "./input/"
+    if os.path.exists(obj_dir):
+        shutil.rmtree(obj_dir)
+
     os.makedirs(obj_dir, exist_ok=True)
     # for file in obj_files:
     temp_path = obj_files.name
@@ -43,6 +46,9 @@ def render_object(obj_files, scale, light_intensity, render_option, x, y, z, ang
     shutil.copy(temp_path, save_path)
     
     output_dir = './output/'
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
     
     obj_positions = []
     obj_rotations = []
@@ -73,7 +79,7 @@ def render_object(obj_files, scale, light_intensity, render_option, x, y, z, ang
     ])
     obj_rotations.append(obj_rot)
         
-    print(f"Processing file: {obj_files.name}")
+    print(f"Processing file: {save_path}")
     print(f"Object Position: {obj_pos}")
     print(f"Rotation Matrix: \n{obj_rot}")    
     
@@ -83,7 +89,7 @@ def render_object(obj_files, scale, light_intensity, render_option, x, y, z, ang
         "--background",
         "--python", script_path,
         "--",
-        obj_files,
+        temp_path,
         str(scale),
         str(light_intensity),
         render_option,

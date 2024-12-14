@@ -594,24 +594,25 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
 
     global_env_map_path ='./data/hdr/transforms_001/00000_rotate.exr'
     global_env_map_path = os.path.abspath(global_env_map_path)
-    output_dir = './output/'
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir = './output'
+    # os.makedirs(output_dir, exist_ok=True)
+    output_dir = os.path.abspath(output_dir) 
 
     # anti-aliasing rendering
-    upscale = 2.0
-    w = int(w * upscale)
-    h = int(h * upscale)
-    if len(K.shape) == 2:
-        K[0, 0] *= upscale
-        K[1, 1] *= upscale
-        K[0, 2] *= upscale
-        K[1, 2] *= upscale
-    else:
-        for i in range(len(K)):
-            K[i][0, 0] *= upscale
-            K[i][1, 1] *= upscale
-            K[i][0, 2] *= upscale
-            K[i][1, 2] *= upscale
+    # upscale = 2.0
+    # w = int(w * upscale)
+    # h = int(h * upscale)
+    # if len(K.shape) == 2:
+    #     K[0, 0] *= upscale
+    #     K[1, 1] *= upscale
+    #     K[0, 2] *= upscale
+    #     K[1, 2] *= upscale
+    # else:
+    #     for i in range(len(K)):
+    #         K[i][0, 0] *= upscale
+    #         K[i][1, 1] *= upscale
+    #         K[i][0, 2] *= upscale
+    #         K[i][1, 2] *= upscale
 
     setup_blender_env(w, h)
     scene_mesh = add_meshes_shadow_catcher(scene_mesh_path, is_uv_mesh=True)
@@ -656,7 +657,7 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
     for FRAME_INDEX in range(scene.frame_start, scene.frame_end + 1):
 
         scene.frame_set(FRAME_INDEX)
-        scene.cycles.samples = 64           # TODO: increase for higher quality but slower rendering
+        scene.cycles.samples = 32           # TODO: increase for higher quality but slower rendering
         bpy.context.view_layer.update()     # Ensure the scene is fully updated
 
         # Step 1: render only inserted objects
