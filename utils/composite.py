@@ -183,13 +183,13 @@ for i in tqdm(range(n_frame)):
     o_s_d = load_depth_exr(all_depth_path)        # o_s_d: object with shadow catcher depth map from Blender
 
     # anti-aliasing
-    new_size = (bg_c.shape[1], bg_c.shape[0])
-    o_c = downsample_image(o_c, new_size)
-    o_d = downsample_image(o_d, new_size)
-    s_c = downsample_image(s_c, new_size)
-    s_d = downsample_image(s_d, new_size)
-    o_s_c = downsample_image(o_s_c, new_size)
-    o_s_d = downsample_image(o_s_d, new_size)
+    # new_size = (bg_c.shape[1], bg_c.shape[0])
+    # o_c = downsample_image(o_c, new_size)
+    # o_d = downsample_image(o_d, new_size)
+    # s_c = downsample_image(s_c, new_size)
+    # s_d = downsample_image(s_d, new_size)
+    # o_s_c = downsample_image(o_s_c, new_size)
+    # o_s_d = downsample_image(o_s_d, new_size)
 
     bg_c = bg_c.astype(np.float32)
     o_c = o_c.astype(np.float32)

@@ -33,13 +33,15 @@ def update_preview(x, y, z, angle):
 def render_object(obj_files, scale, light_intensity, render_option, x, y, z, angle):
     if obj_files is None:
         return "No file uploaded!"
-
+    print(obj_files)
     obj_dir = "./input/"
     os.makedirs(obj_dir, exist_ok=True)
     # for file in obj_files:
     temp_path = obj_files.name
     file_name = os.path.basename(temp_path)
+    print(file_name)
     save_path = os.path.join(obj_dir, file_name)
+    print(save_path)
     shutil.copy(temp_path, save_path)
     
     output_dir = './output/'
@@ -78,12 +80,13 @@ def render_object(obj_files, scale, light_intensity, render_option, x, y, z, ang
     print(f"Rotation Matrix: \n{obj_rot}")    
     
     script_path = os.path.abspath(os.path.join("utils", "blender_render.py"))
+    print(script_path)
     blender_command = [
-        r"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe",
+        r"C:/Program Files/Blender Foundation/Blender 4.2/blender",
         "--background",
         "--python", script_path,
         "--",
-        obj_files,
+        save_path,
         str(scale),
         str(light_intensity),
         render_option,
@@ -97,6 +100,9 @@ def render_object(obj_files, scale, light_intensity, render_option, x, y, z, ang
     log_path = os.path.join(output_dir, "blender_error.log")
     with open(log_path, "w") as log_file:
         try:
+            print(f"blender_command: {blender_command}")
+            print(f"log_file: {log_file}")
+            print(f"log_file type: {type(log_file)}")
             subprocess.run(blender_command, stdout=log_file, stderr=log_file, check=True)
         except subprocess.CalledProcessError as e:
             print(f"Blender rendering failed. Check log file at {log_path}")

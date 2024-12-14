@@ -115,6 +115,7 @@ class Camera():
     def __init__(self, im_height, im_width, out_dir):
         os.makedirs(out_dir, exist_ok=True)
         self.out_dir = out_dir
+        print(self.out_dir)
         self.w = im_width
         self.h = im_height
         self.camera = setup_camera()
@@ -595,23 +596,24 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
     global_env_map_path ='./data/hdr/transforms_001/00000_rotate.exr'
     global_env_map_path = os.path.abspath(global_env_map_path)
     output_dir = './output/'
+    output_dir = os.path.abspath(output_dir)
     os.makedirs(output_dir, exist_ok=True)
 
     # anti-aliasing rendering
-    upscale = 2.0
-    w = int(w * upscale)
-    h = int(h * upscale)
-    if len(K.shape) == 2:
-        K[0, 0] *= upscale
-        K[1, 1] *= upscale
-        K[0, 2] *= upscale
-        K[1, 2] *= upscale
-    else:
-        for i in range(len(K)):
-            K[i][0, 0] *= upscale
-            K[i][1, 1] *= upscale
-            K[i][0, 2] *= upscale
-            K[i][1, 2] *= upscale
+    # upscale = 2.0
+    # w = int(w * upscale)
+    # h = int(h * upscale)
+    # if len(K.shape) == 2:
+    #     K[0, 0] *= upscale
+    #     K[1, 1] *= upscale
+    #     K[0, 2] *= upscale
+    #     K[1, 2] *= upscale
+    # else:
+    #     for i in range(len(K)):
+    #         K[i][0, 0] *= upscale
+    #         K[i][1, 1] *= upscale
+    #         K[i][0, 2] *= upscale
+    #         K[i][1, 2] *= upscale
 
     setup_blender_env(w, h)
     scene_mesh = add_meshes_shadow_catcher(scene_mesh_path, is_uv_mesh=True)
@@ -620,10 +622,11 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
     cam = Camera(h, w, output_dir)
     cam.initialize_depth_extractor()  # initialize once
     cam_list = create_camera_list(c2w, K)
+    print(cam_list)
 
     scene.frame_start = 1
     scene.frame_end = 1
-    scene.frame_end = len(c2w)  # TODO: unblock this to render the entire video
+    # scene.frame_end = len(c2w)  # TODO: unblock this to render the entire video
 
 
     ##### TODO: unit function for adding objects in the scene #####
@@ -656,9 +659,9 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
     for FRAME_INDEX in range(scene.frame_start, scene.frame_end + 1):
 
         scene.frame_set(FRAME_INDEX)
-        scene.cycles.samples = 64           # TODO: increase for higher quality but slower rendering
+        scene.cycles.samples = 32           # TODO: increase for higher quality but slower rendering 64
         bpy.context.view_layer.update()     # Ensure the scene is fully updated
-
+        print("hello")
         # Step 1: render only inserted objects
         set_visible_camera_recursive(object_mesh, True)
         scene_mesh.visible_camera = False
