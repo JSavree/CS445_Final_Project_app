@@ -27,3 +27,6 @@ I have prepared a Python script `utils/composite.py` for your reference. Remembe
 ```bash
 python ./utils/composite.py
 ```
+
+### Remember to change the path of blender.exe to the path in your computer
+It is in frontend_page.py line 166 approximately

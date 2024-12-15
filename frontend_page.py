@@ -163,7 +163,7 @@ def render_object(obj_files, scale, light_intensity, render_option, x, y, z, ang
     script_path = os.path.abspath(os.path.join("utils", "blender_render.py"))
     print(script_path)
     blender_command = [
-        r"C:/Program Files/Blender Foundation/Blender 4.2/blender",
+        r"C:/Program Files/Blender Foundation/Blender 4.2/blender", #change this path to your blender.exe path
         "--background",
         "--python", script_path,
         "--",
@@ -217,13 +217,13 @@ with gr.Blocks() as interface:
     with gr.Row():
         with gr.Column():
             obj_files = gr.File(
-                label="Upload object Files (Multiple Supported)",
+                label="Upload object File",
                 file_types=[".obj", ".glb"]
                 # file_count="multiple"
             )
             scale = gr.Slider(label="Scale", minimum=0.05, maximum=1.0, value=0.5)
             light_intensity = gr.Slider(label="Light Intensity", minimum=0.0, maximum=10.0, value=1.0)
-            render_option = gr.Radio(choices=["Single Image", "Multi Image"], label="Render Option")
+            render_option = gr.Radio(choices=["Single Image"], label="Render Option")
             
             gr.Markdown("### Customize Object Position")
             x = gr.Textbox(label="X Position", value="0.20")
