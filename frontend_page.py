@@ -78,6 +78,7 @@ def update_preview(obj_files, scale, light_intensity, render_option, x, y, z, an
         str(y),
         str(z),
         str(angle),
+        str(1)
     ]
     print("Blender Command:", blender_command)
 
@@ -96,29 +97,11 @@ def update_preview(obj_files, scale, light_intensity, render_option, x, y, z, an
             return f"Blender rendering failed. Check log file at {log_path}"
 
     # display the result from rgb_all
-    img_dir = 'C:/Users/aqwan/GitHub/CS445_Final_Project_app/output/rgb_all/001.png'
+    img_dir = './output/rgb_all/001.png'
+    img_dir = os.path.abspath(img_dir)
     img = cv2.imread(img_dir)
     img_color = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    # fig, ax = plt.subplots()
-    # ax.set_xlim(-1, 1)
-    # ax.set_ylim(-1, 1)
-    # ax.set_title("Object Position Preview")
-    #
-    #
-    # x, y, z = float(x), float(y), float(z)
-    # angle_rad = np.deg2rad(float(angle))
-    #
-    #
-    # ax.plot(x, y, 'ro', label="Object Position")
-    #
-    #
-    # dx = 0.1 * np.cos(angle_rad)
-    # dy = 0.1 * np.sin(angle_rad)
-    # ax.arrow(x, y, dx, dy, head_width=0.05, head_length=0.1, fc='blue', ec='blue', label="Rotation")
-    #
-    #
-    # ax.legend()
-    # plt.close(fig)
+
     return img_color
 
 
@@ -247,6 +230,7 @@ with gr.Blocks() as interface:
             y = gr.Textbox(label="Y Position", value="-0.03")
             z = gr.Textbox(label="Z Position", value="-0.45")
             angle = gr.Slider(label="Z-axis Rotation (degrees)", minimum=-180, maximum=180, value=0)
+            #frames = gr.Textbox(label="Number of Frames to Render")
             
             render_button = gr.Button("Render")
         
@@ -254,12 +238,18 @@ with gr.Blocks() as interface:
             preview_plot = gr.Image(label="Position and Rotation Preview")
             output_image = gr.Video(label="Rendered Output")
 
-    scale.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
-    light_intensity.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
-    x.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
-    y.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
-    z.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
-    angle.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
+    scale.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,
+                                            x, y, z, angle], outputs=preview_plot)
+    light_intensity.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,
+                                                      x, y, z, angle], outputs=preview_plot)
+    x.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,
+                                        x, y, z, angle], outputs=preview_plot)
+    y.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,
+                                        x, y, z, angle], outputs=preview_plot)
+    z.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,
+                                        x, y, z, angle], outputs=preview_plot)
+    angle.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,
+                                            x, y, z, angle], outputs=preview_plot)
 
     render_button.click(
         fn=render_object,

@@ -575,7 +575,7 @@ def delete_object_recursive(obj):
 # Main function
 #########################################################
 
-def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle):
+def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle, frame_number=75):
     # config_path = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/blender_cfg.json'
     config_path = './data/blender_cfg.json'
     config_path = os.path.abspath(config_path)
@@ -625,7 +625,7 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
     print(cam_list)
 
     scene.frame_start = 1
-    scene.frame_end = 75
+    scene.frame_end = frame_number
     # scene.frame_end = len(c2w)  # TODO: unblock this to render the entire video
 
 
@@ -692,8 +692,8 @@ if __name__ == "__main__":
     
     args = sys.argv[sys.argv.index("--") + 1:]
 
-    if len(args) != 8:
-        raise ValueError("Expected 8 arguments: obj_files, scale, light_intensity, render_option, x, y, z, angle")
+    if len(args) < 8:
+        raise ValueError("Expected 8 or more arguments: obj_files, scale, light_intensity, render_option, x, y, z, angle, and possibly frame number")
 
     obj_files = args[0]
     scale = float(args[1])
@@ -703,6 +703,7 @@ if __name__ == "__main__":
     y = float(args[5])
     z = float(args[6])
     angle = int(args[7])
+    frame_number = int(args[8])
     
     main_render(
         obj_files=obj_files,
@@ -712,5 +713,6 @@ if __name__ == "__main__":
         x=x,
         y=y,
         z=z,
-        angle=angle
+        angle=angle,
+        frame_number=frame_number
     )
