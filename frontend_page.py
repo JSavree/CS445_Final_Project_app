@@ -4,30 +4,122 @@ import matplotlib.pyplot as plt
 import subprocess
 import os
 import shutil
+import cv2
 
 
-def update_preview(x, y, z, angle):
-    fig, ax = plt.subplots()
-    ax.set_xlim(-1, 1)
-    ax.set_ylim(-1, 1)
-    ax.set_title("Object Position Preview")
+def update_preview(obj_files, scale, light_intensity, render_option, x, y, z, angle):
+    # change this to display an image. I can just displaythe image from rgb_all
+    if obj_files is None:
+        return "No file uploaded!"
+    print(obj_files)
+    obj_dir = "./input/"
+    if os.path.exists(obj_dir):
+        shutil.rmtree(obj_dir)
 
+    os.makedirs(obj_dir, exist_ok=True)
+    # for file in obj_files:
+    temp_path = obj_files.name
+    file_name = os.path.basename(temp_path)
+    print(file_name)
+    save_path = os.path.join(obj_dir, file_name)
+    print(save_path)
+    shutil.copy(temp_path, save_path)
 
-    x, y, z = float(x), float(y), float(z)
+    output_dir = './output/'
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
+
+    obj_positions = []
+    obj_rotations = []
+    # for obj_file in obj_files:
+    #     obj_pos = np.array([float(x), float(y), float(z)])
+    #     obj_positions.append(obj_pos)
+
+    #     angle_rad = np.deg2rad(float(angle))
+    #     obj_rot = np.array([
+    #         [np.cos(angle_rad), -np.sin(angle_rad), 0.0],
+    #         [np.sin(angle_rad), np.cos(angle_rad), 0.0],
+    #         [0.0, 0.0, 1.0]
+    #     ])
+    #     obj_rotations.append(obj_rot)
+
+    #     print(f"Processing file: {obj_file.name}")
+    #     print(f"Object Position: {obj_pos}")
+    #     print(f"Rotation Matrix: \n{obj_rot}")
+
+    obj_pos = np.array([float(x), float(y), float(z)])
+    obj_positions.append(obj_pos)
+
     angle_rad = np.deg2rad(float(angle))
-    
+    obj_rot = np.array([
+        [np.cos(angle_rad), -np.sin(angle_rad), 0.0],
+        [np.sin(angle_rad), np.cos(angle_rad), 0.0],
+        [0.0, 0.0, 1.0]
+    ])
+    obj_rotations.append(obj_rot)
 
-    ax.plot(x, y, 'ro', label="Object Position")
-    
+    print(f"Processing file: {save_path}")
+    print(f"Object Position: {obj_pos}")
+    print(f"Rotation Matrix: \n{obj_rot}")
 
-    dx = 0.1 * np.cos(angle_rad)
-    dy = 0.1 * np.sin(angle_rad)
-    ax.arrow(x, y, dx, dy, head_width=0.05, head_length=0.1, fc='blue', ec='blue', label="Rotation")
-    
+    script_path = os.path.abspath(os.path.join("utils", "blender_render.py"))
+    print(script_path)
+    blender_command = [
+        r"C:/Program Files/Blender Foundation/Blender 4.2/blender",
+        "--background",
+        "--python", script_path,
+        "--",
+        temp_path,
+        str(scale),
+        str(light_intensity),
+        render_option,
+        str(x),
+        str(y),
+        str(z),
+        str(angle),
+    ]
+    print("Blender Command:", blender_command)
 
-    ax.legend()
-    plt.close(fig)
-    return fig
+    log_path = os.path.join(output_dir, "blender_error.log")
+    with open(log_path, "w") as log_file:
+        try:
+            print(f"blender_command: {blender_command}")
+            print(f"log_file: {log_file}")
+            print(f"log_file type: {type(log_file)}")
+            subprocess.run(blender_command, stdout=log_file, stderr=log_file, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Blender rendering failed. Check log file at {log_path}")
+            if os.path.exists(log_path):
+                with open(log_path, "r") as error_file:
+                    print(error_file.read())
+            return f"Blender rendering failed. Check log file at {log_path}"
+
+    # display the result from rgb_all
+    img_dir = 'C:/Users/aqwan/GitHub/CS445_Final_Project_app/output/rgb_all/001.png'
+    img = cv2.imread(img_dir)
+    img_color = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # fig, ax = plt.subplots()
+    # ax.set_xlim(-1, 1)
+    # ax.set_ylim(-1, 1)
+    # ax.set_title("Object Position Preview")
+    #
+    #
+    # x, y, z = float(x), float(y), float(z)
+    # angle_rad = np.deg2rad(float(angle))
+    #
+    #
+    # ax.plot(x, y, 'ro', label="Object Position")
+    #
+    #
+    # dx = 0.1 * np.cos(angle_rad)
+    # dy = 0.1 * np.sin(angle_rad)
+    # ax.arrow(x, y, dx, dy, head_width=0.05, head_length=0.1, fc='blue', ec='blue', label="Rotation")
+    #
+    #
+    # ax.legend()
+    # plt.close(fig)
+    return img_color
 
 
 def render_object(obj_files, scale, light_intensity, render_option, x, y, z, angle):
@@ -159,13 +251,15 @@ with gr.Blocks() as interface:
             render_button = gr.Button("Render")
         
         with gr.Column():
-            preview_plot = gr.Plot(label="Position and Rotation Preview")
+            preview_plot = gr.Image(label="Position and Rotation Preview")
             output_image = gr.Video(label="Rendered Output")
 
-    x.change(fn=update_preview, inputs=[x, y, z, angle], outputs=preview_plot)
-    y.change(fn=update_preview, inputs=[x, y, z, angle], outputs=preview_plot)
-    z.change(fn=update_preview, inputs=[x, y, z, angle], outputs=preview_plot)
-    angle.change(fn=update_preview, inputs=[x, y, z, angle], outputs=preview_plot)
+    scale.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
+    light_intensity.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
+    x.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
+    y.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
+    z.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
+    angle.change(fn=update_preview, inputs=[obj_files, scale, light_intensity, render_option,x, y, z, angle], outputs=preview_plot)
 
     render_button.click(
         fn=render_object,

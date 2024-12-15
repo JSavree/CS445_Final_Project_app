@@ -586,7 +586,7 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
     h, w = config['im_height'], config['im_width']
     K = np.array(config['K'])
     c2w = np.array(config['c2w'])
-    scene_mesh_path = './data/mesh/bugatti.obj'
+    scene_mesh_path = './data/mesh/mesh.obj'
     scene_mesh_path = os.path.abspath(scene_mesh_path)
     if not os.path.exists(scene_mesh_path):
         print(f"File not found: {scene_mesh_path}")
