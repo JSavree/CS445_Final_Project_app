@@ -625,7 +625,7 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
     print(cam_list)
 
     scene.frame_start = 1
-    scene.frame_end = 1
+    scene.frame_end = 75
     # scene.frame_end = len(c2w)  # TODO: unblock this to render the entire video
 
 
