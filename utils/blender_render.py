@@ -585,7 +585,7 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
     h, w = config['im_height'], config['im_width']
     K = np.array(config['K'])
     c2w = np.array(config['c2w'])
-    scene_mesh_path = './data/mesh/bugatti.obj'
+    scene_mesh_path = './data/mesh/mesh.obj'
     scene_mesh_path = os.path.abspath(scene_mesh_path)
     if not os.path.exists(scene_mesh_path):
         print(f"File not found: {scene_mesh_path}")
@@ -623,8 +623,8 @@ def main_render(obj_files, scale, light_intensity, render_option, x, y, z, angle
     cam_list = create_camera_list(c2w, K)
 
     scene.frame_start = 1
-    scene.frame_end = 1
-    scene.frame_end = len(c2w)  # TODO: unblock this to render the entire video
+    scene.frame_end = 75
+    # scene.frame_end = len(c2w)  # TODO: unblock this to render the entire video
 
 
     ##### TODO: unit function for adding objects in the scene #####
