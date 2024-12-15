@@ -2,16 +2,19 @@ import numpy as np
 import os 
 import argparse
 from PIL import Image, ImageFilter
+os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "True"
 import cv2
 import imageio.v2 as imageio
 from tqdm import tqdm
 import glob
 import skimage
 import json
+import OpenEXR
+import Imath
 
 
-os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 
+# jason liao blender location: C:/Program Files/Blender Foundation/Blender 4.2/blender
 
 def downsample_image(image, new_size):
     img = Image.fromarray(image)
@@ -62,12 +65,37 @@ def load_depth(path):
         return np.load(path)
 
 
+# def load_depth_exr(path):
+#     if not os.path.exists(path):
+#         return None
+#     else:
+#         d = cv2.imread(path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
+        
+#         return d[:, :, 0]
+
 def load_depth_exr(path):
     if not os.path.exists(path):
         return None
     else:
-        d = cv2.imread(path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
-        return d[:, :, 0]
+        try:
+            exr_file = OpenEXR.InputFile(path)
+            header = exr_file.header()
+
+            dw = header['dataWindow']
+            width = dw.max.x - dw.min.x + 1
+            height = dw.max.y - dw.min.y + 1
+
+            channel = 'V'
+            if channel in header['channels']:
+                raw_data = exr_file.channel(channel, Imath.PixelType(Imath.PixelType.FLOAT))
+                depth_data = np.frombuffer(raw_data, dtype=np.float32).reshape((height, width))
+                return depth_data
+            else:
+                print(f"Channel {channel} not found in EXR file {path}")
+                return None
+        except Exception as e:
+            print(f"Error loading EXR file {path}: {e}")
+            return None
 
 
 def depth_check(depth1, depth2, option='naive', d_tol=0.1):
@@ -84,8 +112,43 @@ def depth_check(depth1, depth2, option='naive', d_tol=0.1):
         raise ValueError('Invalid option: {}'.format(option))
     
 
-root_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/custom_camera_path/transforms_001'
-blend_results_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/output'
+# root_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/data/custom_camera_path/transforms_001'
+# my_root_dir = 'C:/Users/aqwan/GitHub/CS445_Final_Project_app/data'
+# root_dir = my_root_dir # './data'
+root_dir = './data'
+root_dir = os.path.abspath(root_dir)
+
+# blend_results_dir = '/home/haoyuyh3/Documents/maxhsu/CS445_Final_Project_app/output'
+# my_blend_results_dir = 'C:/Users/aqwan/GitHub/CS445_Final_Project_app/output'
+# blend_results_dir = my_blend_results_dir # './output'
+# file_path = my_blend_results_dir + '/depth_obj/001/image0001.exr' 
+blend_results_dir = './output'
+file_path = os.path.abspath(blend_results_dir + '/depth_obj/001/image0001.exr')
+blend_results_dir = os.path.abspath(blend_results_dir)
+
+#for test
+
+# image = OpenEXR.InputFile(file_path)
+# if image is None:
+#         print("OpenCV failed to load")
+# else:
+#         print("OpenCV load successful")
+        
+
+# def list_channels(exr_path):
+#     try:
+#         exr_file = OpenEXR.InputFile(exr_path)
+#         channels = exr_file.header()['channels'].keys()
+#         print(f"Channels in {exr_path}: {list(channels)}")
+#         return list(channels)
+#     except Exception as e:
+#         print(f"Error reading EXR file {exr_path}: {e}")
+#         return None
+
+# exr_file_path = r"C:\Users\Simon\Documents\GitHub\CS445_Final_Project_app\output\depth_obj\001\Image0001.exr"
+# list_channels(exr_file_path)
+###
+
 out_img_dir = os.path.join(blend_results_dir, 'frames')
 os.makedirs(out_img_dir, exist_ok=True)
 
@@ -93,6 +156,7 @@ bg_rgb = sorted(glob.glob(os.path.join(root_dir, 'images', '*.png')))
 bg_depth = sorted(glob.glob(os.path.join(root_dir, 'depth', '*.npy')))
 
 rgb_all_img_path = glob.glob(os.path.join(blend_results_dir, 'rgb_all', '*.png'))
+
 n_frame = len(rgb_all_img_path)
 
 frames = []
@@ -102,6 +166,8 @@ for i in tqdm(range(n_frame)):
     # Get the paths for each frame
     obj_rgb_path = os.path.join(blend_results_dir, 'rgb_obj', '{:0>3d}.png'.format(i+1))
     obj_depth_path = os.path.join(blend_results_dir, 'depth_obj', '{:0>3d}'.format(i+1), 'Image{:0>4d}.exr'.format(i+1))
+    # print(obj_depth_path)
+    # print(obj_rgb_path)
     shadow_rgb_path = os.path.join(blend_results_dir, 'rgb_shadow', '{:0>3d}.png'.format(i+1))
     shadow_depth_path = os.path.join(blend_results_dir, 'depth_shadow', '{:0>3d}'.format(i+1), 'Image{:0>4d}.exr'.format(i+1))
     all_rgb_path = os.path.join(blend_results_dir, 'rgb_all', '{:0>3d}.png'.format(i+1))
@@ -117,13 +183,13 @@ for i in tqdm(range(n_frame)):
     o_s_d = load_depth_exr(all_depth_path)        # o_s_d: object with shadow catcher depth map from Blender
 
     # anti-aliasing
-    new_size = (bg_c.shape[1], bg_c.shape[0])
-    o_c = downsample_image(o_c, new_size)
-    o_d = downsample_image(o_d, new_size)
-    s_c = downsample_image(s_c, new_size)
-    s_d = downsample_image(s_d, new_size)
-    o_s_c = downsample_image(o_s_c, new_size)
-    o_s_d = downsample_image(o_s_d, new_size)
+    # new_size = (bg_c.shape[1], bg_c.shape[0])
+    # o_c = downsample_image(o_c, new_size)
+    # o_d = downsample_image(o_d, new_size)
+    # s_c = downsample_image(s_c, new_size)
+    # s_d = downsample_image(s_d, new_size)
+    # o_s_c = downsample_image(o_s_c, new_size)
+    # o_s_d = downsample_image(o_s_d, new_size)
 
     bg_c = bg_c.astype(np.float32)
     o_c = o_c.astype(np.float32)

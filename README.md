@@ -18,8 +18,8 @@ I have prepared a Python script `utils/blender_render.py` for your reference. Sp
 ```bash
 path/to/blender/blender-3.6.11-linux-x64/blender --background --python ./utils/blender_render.py
 ```
-Note: you may need to change `config_path` in the `utils/blender_render.py` to the path to `blender_cfg.json`, and several folder/file paths within `blender_cfg.json`.
-
+Note: you may need to change `config_path` in the `utils/blender_render.py` to the path to `blender_cfg.json`, and several folder/file paths within `blender_cfg.json`. 
+Also, you will need to change the blender file path to whichever path stores your blender executable in the `frontend_page.py` file if you wish to run this code yourself with the ui. Specifically, you will need to change lines 69 and 166 for the blender commands.
 
 ### How to composite:
 
